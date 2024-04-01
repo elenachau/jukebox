@@ -106,16 +106,66 @@ void Playlist::addNewSong(Song, int){
 
 }
 
-void Playlist::displayLoadedSongs(bool=true) const{
-
+void Playlist::displayLoadedSongs(bool displayNumbers) const{
+    if(firstSong == nullptr){
+        cout << "No songs are currently loaded for play." << endl;
+    }
+    Song *temp = firstSong;
+    int numDisp = 0;
+    while(temp){
+        if(displayNumbers){
+            cout << numDisp + 1 << ". ";
+            if(numDisp + 1 < 10){
+                cout << " ";
+            }
+            else if(numDisp + 1 < 100){
+                cout << " ";
+            }
+        }
+        cout << temp->getTitle() << endl;
+        temp = temp->getNextSong();
+        numDisp+=1;
+    }
 }
 
 Playlist::~Playlist(){
+    Song* temp = firstSong;
+    while(temp != nullptr){
+        // Song* icky = firstSong;
+        firstSong = firstSong->getNextSong();
+        delete temp;
+        temp = firstSong;
+    }
 
+    lastSong = nullptr;
+    firstSong = nullptr;
 }
 
-Playlist& Playlist::operator=(const Playlist&){
+Playlist& Playlist::operator=(const Playlist& rhs){
+    numberSongsLoaded = rhs.numberSongsLoaded;
+    name = rhs.name;
+    if(rhs.firstSong == nullptr){
+        firstSong = lastSong = nullptr;
+    }
+    else{
+        Song* temp = rhs.firstSong;
+        firstSong = lastSong = new Song;
+        firstSong->setArtist(temp->getArtist());
+        firstSong->setTitle(temp->getTitle());
+        firstSong->setNextSong(nullptr);
 
+        temp = temp->getNextSong();
+        while(temp != nullptr){
+            lastSong->setNextSong(new Song);
+            lastSong = lastSong->getNextSong();
+            lastSong->setArtist(temp->getArtist());
+            lastSong->setTitle(temp->getTitle());
+            lastSong->setNextSong(nullptr);
+            temp = temp->getNextSong();
+        }
+    }
+
+    return *this;
 }
 
 void Playlist::operator+(Song a){
