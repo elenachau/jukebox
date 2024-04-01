@@ -102,8 +102,112 @@ void Playlist::setName(string nm){
     name = nm;
 }
 
-void Playlist::addNewSong(Song, int){
+void Playlist::deleteSong(int entryNumber){
+    if(firstSong == nullptr){
+        cout << "No songs loaded; cannot delete" << endl;
+    }
+    if(entryNumber > numberSongsLoaded+2){
+        cout << "This is an invalid option. Cannot remove song." << endl;
+    }
+    if(firstSong == lastSong){
+        deleteSong();
+    }
+    else{
+        Song* current = firstSong;
+        Song* previous = nullptr;
+        int numNodesVisited = 0;
+        while(numNodesVisited < entryNumber){
+            if(numNodesVisited != entryNumber-1){
+                previous = current;
+                current = current->getNextSong();
+            }
+            else{
+                if(entryNumber == 1){
+                    deleteSong();
+                }
+                else{
+                    previous->setNextSong(current->getNextSong());
+                    delete current;
+                    current = previous->getNextSong();
+                    numberSongsLoaded-=1;
+                }
+            }
+            numNodesVisited++;
+        }
+    }
+}
 
+void Playlist::deleteSong(){
+    if(firstSong == nullptr){
+        cout << "No songs loaded; cannot delete" << endl;
+    }
+    if(firstSong == lastSong){
+        Song* temp = firstSong;
+        firstSong = lastSong = nullptr;
+        delete temp;
+        numberSongsLoaded -= 1;
+    }
+    else{
+        Song* temp = firstSong;
+        firstSong = firstSong->getNextSong();
+        delete temp;
+        numberSongsLoaded -= 1;
+    }
+}
+
+void Playlist::addNewSong(const Song s){
+    if(!isAlreadyInPlaylist(s)){
+        Song* newSong = new Song;
+        newSong->setTitle(s.getTitle());
+        newSong->setArtist(s.getArtist());
+
+        if(firstSong == nullptr){
+            firstSong = lastSong = newSong;
+        }
+        else{
+            lastSong->setNextSong(newSong);
+        }
+        lastSong = newSong;
+        numberSongsLoaded+=1;
+    }
+}
+
+
+void Playlist::addNewSong(Song s, int index){
+    Song* temp = new Song;
+    if(temp == nullptr){ //if memory allocation fails
+        cout << "Unable to load playlist" << endl;
+    }
+    Song *current = firstSong;
+    Song *previous = nullptr;
+    int numNodesVisited = 0;
+
+    if(!isAlreadyInPlaylist(s)){
+        temp->setTitle(s.getTitle());
+        temp->setArtist(s.getArtist());
+        while(numNodesVisited < index){
+            if(numNodesVisited != index-1){
+                previous = current;
+                current = current->getNextSong();
+            }
+            else{
+                if(index == numberSongsLoaded || firstSong == nullptr){
+                    addNewSong(s);
+                }
+                else if(index == 1){
+                    temp->setNextSong(current);
+                    firstSong = temp;
+                    numberSongsLoaded++;
+                }
+                else{
+                    temp->setNextSong(current);
+                    previous->setNextSong(temp);
+                    numberSongsLoaded++;
+                }
+            }
+            numNodesVisited++;
+        }
+    }
 }
 
 void Playlist::displayLoadedSongs(bool displayNumbers) const{
@@ -116,7 +220,7 @@ void Playlist::displayLoadedSongs(bool displayNumbers) const{
         if(displayNumbers){
             cout << numDisp + 1 << ". ";
             if(numDisp + 1 < 10){
-                cout << " ";
+                cout << "  ";
             }
             else if(numDisp + 1 < 100){
                 cout << " ";
@@ -168,10 +272,10 @@ Playlist& Playlist::operator=(const Playlist& rhs){
     return *this;
 }
 
-void Playlist::operator+(Song a){
-
+void Playlist::operator+(Song newSong){
+    addNewSong(newSong);
 }
 
-void Playlist::operator-(int){
-
+void Playlist::operator-(int songInd){
+    deleteSong(songInd);
 }
