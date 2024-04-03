@@ -10,6 +10,7 @@ class Playlist{
     bool isAlreadyInPlaylist(Song n);
     void addNewSong(const Song);
     void deleteSong(int);
+    void deleteSong();
 
     public:
         Playlist();
