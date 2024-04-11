@@ -60,7 +60,75 @@ void readData(ifstream& inFile, Playlist& allSongs){
     }
 }
 
-bool createNewPlaylist(const Playlist&, Playlist&){
+bool createNewPlaylist(const Playlist& allSongs, Playlist& newPlaylist){
+    bool entryMade = false;
+    int numPrompts = 0;
+    string playlistName;
+
+    do{
+        if(numPrompts > 0){
+            cout << "Another playlist already exists with that name." << endl;
+        }
+        cout << endl << "Playlist name: ";
+        getUserEntry(playlistName);
+        numPrompts++;
+    }while(playlistExists(playlistName));
+    newPlaylist.setName(playlistName);
+
+    cout << "Displaying Available Songs: " << endl;
+    cout << allSongs;
+    cout << allSongs.getNumSongsLoaded()+1 << ". ";
+    if(allSongs.getNumSongsLoaded() + 1 < 10) {
+        cout << "  ";
+    }
+    else if(allSongs.getNumSongsLoaded() + 1 < 100) {
+        cout << " ";
+    }
+    cout << "Finalize List." << endl;
+
+    cout << allSongs.getNumSongsLoaded() + 2 << ". ";
+    if(allSongs.getNumSongsLoaded() + 2 < 10) {
+        cout << "  ";
+    }
+    else if(allSongs.getNumSongsLoaded() + 2 < 100) {
+        cout << " ";
+    }
+    cout << "Exit Program." << endl;
+
+    int userSongChoice;
+    do{
+        cout << "Make a selection: ";
+        getUserEntry(userSongChoice);
+        if(userSongChoice == allSongs.getNumSongsLoaded()+1){
+            if(newPlaylist.getNumSongsLoaded() > 0){
+                writePlaylistToFile(newPlaylist);
+            }
+            return false;
+        }
+        else if(userSongChoice > 0 && userSongChoice < allSongs.getNumSongsLoaded()){
+            entryMade = true;
+            newPlaylist + *allSongs.getSongAtIndex(userSongChoice);
+        }
+        else{
+            char save;
+            if(entryMade){
+                do{
+                    cout << "Would you like to save (y/n): ";
+                    getUserEntry(save);
+                }while(save != 'y' && save != 'n');
+                if(save == 'y'){
+                    writePlaylistToFile(newPlaylist);
+                }
+            }
+            return true;
+        }
+    }while((userSongChoice != allSongs.getNumSongsLoaded() + 1) && (userSongChoice != allSongs.getNumSongsLoaded() + 2));
+    writePlaylistToFile(newPlaylist);
+    if(userSongChoice == allSongs.getNumSongsLoaded() + 2){
+        return true;
+    }
+    system("clear");
+    return false;
 
 }
 
@@ -87,6 +155,13 @@ void promptPlaylistSelection(string* existingPlaylists, int numPlaylists){
     for(int i = 0; i < numPlaylists; i++){
         cout << i+1 << ". " << existingPlaylists[i] << endl;
     }
+}
+
+void promptTypesModificationSelection(){
+    cout << "1. Remove Song(s)." <<endl;
+    cout << "2. Add Song(s)." <<endl;
+    cout << "3. Return to Playlist Options Menu." <<endl;
+    cout << "4. Exit." <<endl;
 }
 
 bool modifyPlaylist(Playlist&, const Playlist&){
