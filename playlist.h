@@ -7,7 +7,7 @@ class Playlist{
     Song *firstSong, *lastSong;
     int numberSongsLoaded;
     string name;
-    bool isAlreadyInPlaylist(Song n);
+    bool isAlreadyInPlaylist(Song);
     void addNewSong(const Song);
     void deleteSong(int);
     void deleteSong();
