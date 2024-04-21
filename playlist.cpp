@@ -102,6 +102,21 @@ void Playlist::setName(string nm){
     name = nm;
 }
 
+bool Playlist::isAlreadyInPlaylist(Song newSong){
+    Song* temp = firstSong;
+    bool found = false;
+    while(temp){
+        if(temp->getTitle() == newSong.getTitle()){
+            found = true;
+            break;
+        }
+        else{
+            temp = temp->getNextSong();
+        }
+    }
+    return found;
+}
+
 void Playlist::deleteSong(int entryNumber){
     if(firstSong == nullptr){
         cout << "No songs loaded; cannot delete" << endl;
