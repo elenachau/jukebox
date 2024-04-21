@@ -1,8 +1,8 @@
 #ifndef SONG_H
 #define SONG_H
 
-using namespace std;
 #include <iostream>
+using namespace std;
 
 class Song{
     string title, artist;
