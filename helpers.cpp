@@ -165,7 +165,7 @@ bool manageExistingPlaylists(const Playlist& all, Playlist& selectedPlaylist){
 
     bool exit = false;
     do{
-        ifstream fin(existingPlaylists[userEntryPlaylist+1] + ".txt");
+        ifstream fin(existingPlaylists[userEntryPlaylist-1] + ".txt");
         selectedPlaylist.setName(existingPlaylists[userEntryPlaylist-1]); //set name
         readData(fin, selectedPlaylist); //add songs
         system("clear");
@@ -173,7 +173,7 @@ bool manageExistingPlaylists(const Playlist& all, Playlist& selectedPlaylist){
         selectedPlaylist.displayLoadedSongs(false);
         cout << endl;
 
-        promptTypesModificationSelection();
+        promptModificationsToExistingPlaylist();
         do{
             cout << "What would you like to do with " << existingPlaylists[userEntryPlaylist-1] << "? ";
             getUserEntry(mods);
@@ -442,4 +442,31 @@ bool deletePlaylist(Playlist& playlist){
         return true;
     }
     return false;
+}
+
+ostream& operator<<(ostream &out, const Song &s){
+    out << s.title << endl;
+    return out;
+}
+
+ostream& operator<<(ostream &out, const Playlist &p){
+    if(p.firstSong == nullptr){
+        cout << "No songs are currently loaded for play." << endl;
+    }
+    
+    Song* temp = p.firstSong;
+    int numDisp = 0;
+    while(temp){
+        cout << numDisp+1 << ". ";
+        if(numDisp+1 < 10){
+            cout << "  ";
+        }
+        else if(numDisp+1 < 100){
+            cout << " ";
+        }
+        cout << *temp;
+        temp = temp->getNextSong();
+        numDisp+=1;
+    }
+    return out;
 }
