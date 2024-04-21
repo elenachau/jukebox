@@ -141,12 +141,101 @@ bool playlistExists(string newPlaylist){
     return false;
 }
 
-bool manageExistingPlaylists(const Playlist&, Playlist&){
+bool manageExistingPlaylists(const Playlist& all, Playlist& selectedPlaylist){
+    string* existingPlaylists = new string[100];
+    int numPlaylistsExisting = getExistingPlaylists(existingPlaylists);
 
+    promptPlaylistSelection(existingPlaylists, numPlaylistsExisting);
+    cout << numPlaylistsExisting+1 << ". Return to Main Menu." << endl;
+    cout << numPlaylistsExisting+2 << ". Exit Program." << endl;
+    
+    int userEntryPlaylist, mods;
+
+    do{
+        cout << endl << "Which playlist would you like to load?";
+        getUserEntry(userEntryPlaylist);
+    }while(userEntryPlaylist < 1 || userEntryPlaylist > numPlaylistsExisting + 2);
+
+    if(userEntryPlaylist == numPlaylistsExisting + 2){
+        return true; //exit
+    }
+    else if(userEntryPlaylist == numPlaylistsExisting + 1){
+        return false;
+    }
+
+    bool exit = false;
+    do{
+        ifstream fin(existingPlaylists[userEntryPlaylist+1] + ".txt");
+        selectedPlaylist.setName(existingPlaylists[userEntryPlaylist-1]); //set name
+        readData(fin, selectedPlaylist); //add songs
+        system("clear");
+        cout << "========" << selectedPlaylist.getName() << "========" << endl;
+        selectedPlaylist.displayLoadedSongs(false);
+        cout << endl;
+
+        promptTypesModificationSelection();
+        do{
+            cout << "What would you like to do with " << existingPlaylists[userEntryPlaylist-1] << "? ";
+            getUserEntry(mods);
+        }while(mods > 4 && mods < 1);
+
+        system("clear");
+        cout << "========" << selectedPlaylist.getName() << "========" << endl;
+        selectedPlaylist.displayLoadedSongs(false);
+        cout << endl;
+        switch(mods){
+            case 1:
+                exit = modifyPlaylist(selectedPlaylist, all);
+                if(selectedPlaylist.getNumSongsLoaded() == 0){
+                    mods = 3; //return to main menu
+                }
+                else if(exit){
+                    mods = 4; //exit program
+                }
+                break;
+            case 2:
+                exit = deletePlaylist(selectedPlaylist);
+                mods = 3;
+                break;
+            case 3:
+                exit = false;
+                break;
+            case 4:
+                exit = true;
+                break;
+            default:
+                cout << "Invalid Selection." << endl;
+        }
+    }while(mods != 3 && mods != 4);
+    return exit;
 }
 
-int getExistingPlaylists(string*){
+int getExistingPlaylists(string* existingPlaylists){
+    DIR *directoryPtr = opendir("."); //open current directory
+    struct dirent *directoryEntry; //ptr to structure representing directory entry
+    int numPlaylists = 0;
+    if(directoryPtr){ //if directory opened successfully
+        while((directoryEntry = readdir(directoryPtr)) != NULL) { //loop through each directory entry
+            string filename = directoryEntry->d_name; //extracts current directory; d_name is a member of dirent structure
+            string empty = "";
+            if(filename != "dbSmall.txt" && filename != "dbLarge.txt"){
+                for(int i = filename.size()/sizeof('c')-4; i < filename.size()/sizeof('c'); i++){
+                    empty += filename[i]; //gets file extension e.g. .txt
+                }
+                if(empty == ".txt"){
+                    string cleanedFilename = "";
+                    for(int i = 0; i < filename.size()/sizeof('a') - 4; i++){
+                        cleanedFilename += filename[i];
+                    }
+                    existingPlaylists[numPlaylists] = cleanedFilename;
+                    numPlaylists++;
+                }
+            }
+        }
+        closedir(directoryPtr); //close directory
+    }
 
+    return numPlaylists;
 }
 
 void promptPlaylistSelection(string* existingPlaylists, int numPlaylists){
@@ -157,6 +246,13 @@ void promptPlaylistSelection(string* existingPlaylists, int numPlaylists){
     }
 }
 
+void promptModificationsToExistingPlaylist(){
+    cout << "1. Modify Playlist." <<endl;
+    cout << "2. Delete Playlist." << endl;
+    cout << "3. Return to Main Menu." <<endl;
+    cout << "4. Exit Program." <<endl;
+}
+
 void promptTypesModificationSelection(){
     cout << "1. Remove Song(s)." <<endl;
     cout << "2. Add Song(s)." <<endl;
@@ -164,12 +260,79 @@ void promptTypesModificationSelection(){
     cout << "4. Exit." <<endl;
 }
 
-bool modifyPlaylist(Playlist&, const Playlist&){
+bool modifyPlaylist(Playlist& playlist, const Playlist& all){
+    promptTypesModificationSelection();
+    bool exit;
+    int userModType, songChoice;
+    
+    do{
+        cout << "What would you like to do? ";
+        getUserEntry(userModType);
+    }while(userModType < 1 || userModType > 4);
+    system("clear");
 
+    switch(userModType){
+        case 1:
+            exit = deleteSongFromPlaylist(playlist);
+            break;
+        case 2:
+            exit = addSongToPlaylist(playlist, all);
+            break;
+        case 3:
+            exit = false;
+            break;
+        case 4:
+            exit = true;
+            break;
+    }
+
+    if(playlist.getFirstSong() != nullptr){
+        writePlaylistToFile(playlist);
+    }
+
+    return exit;
 }
 
-bool addSongToPlaylist(Playlist&, const Playlist&){
+bool addSongToPlaylist(Playlist& playlist, const Playlist& all){
+    int val;
 
+    do{
+        cout << all;
+        cout << all.getNumSongsLoaded() + 1 << ". Return to Playlist Options Menu." << endl;
+        cout << all.getNumSongsLoaded() + 2 << ". Exit Program." << endl;
+        cout << "Select a song to add: ";
+        getUserEntry(val);
+        if(val != all.getNumSongsLoaded() + 1 && val != all.getNumSongsLoaded() + 2){
+            char userEntry;
+            do{
+                cout << "Add song to end of playlist (y/n)? "; //entry at 1 seg faults
+                getUserEntry(userEntry);
+            }while(userEntry != 'n' && userEntry != 'N' && userEntry != 'y' && userEntry != 'Y');
+
+            if(userEntry == 'y' || userEntry == 'Y'){
+                playlist+*all.getSongAtIndex(val);
+            }
+            else{
+                int songInd;
+                do{
+                    system("clear");
+                    cout << "========" << playlist.getName() << "========" << endl;
+                    cout << playlist;
+                    cout << "Which song would you like to insert before? ";
+                    getUserEntry(songInd);
+                }while(songInd < 1 && songInd > playlist.getNumSongsLoaded());
+
+                playlist.addNewSong(*all.getSongAtIndex(val), songInd);
+            }
+        }
+    }while(val != all.getNumSongsLoaded() + 1 && val != all.getNumSongsLoaded() + 2);
+    system("clear");
+    writePlaylistToFile(playlist);
+    if(val == all.getNumSongsLoaded() + 2){
+        return true; //exit program
+    }
+
+    return false;
 }
 
 bool deleteSongFromPlaylist(Playlist& playlist){
@@ -261,6 +424,22 @@ bool deleteSongFromPlaylist(Playlist& playlist){
     return false;
 }
 
-bool deletePlaylist(Playlist&){
+bool deletePlaylist(Playlist& playlist){
+    string playlistFile = playlist.getName() + ".txt";
+    remove(playlistFile.c_str()); //converts file to a C-style null-terminated string and deletes file
+    cout << playlist.getName() << " deleted!" << endl;
+    cout << "1. Return to Main Menu." << endl;
+    cout << "2. Exit Program." <<endl;
 
+    int userEntry;
+
+    do{
+        cout << "What would you like to do? ";
+        getUserEntry(userEntry);
+    }while(userEntry < 1 && userEntry > 2);
+
+    if(userEntry == 2){
+        return true;
+    }
+    return false;
 }
