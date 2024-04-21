@@ -1,4 +1,4 @@
-## GitHub README: C++ Playlist Management System
+## C++ Playlist Management System
 
 This project showcases a dynamic playlist management system developed in C++. It features dynamic memory allocation using pointers instead of arrays, operator overloading for streamlined object manipulation, and robust file handling for interactive playlist management.
 
