@@ -14,6 +14,7 @@ void getUserEntry(string&);
 void displayMainMenu();
 void promptSongSelection();
 void promptTypesModificationSelection();
+void promptModificationsToExistingPlaylist();
 void writePlaylistToFile(Playlist&);
 void readData(ifstream&, Playlist&);
 bool createNewPlaylist(const Playlist&, Playlist&);
