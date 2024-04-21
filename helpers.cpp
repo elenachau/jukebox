@@ -71,6 +71,8 @@ bool createNewPlaylist(const Playlist& allSongs, Playlist& newPlaylist){
         }
         cout << endl << "Playlist name: ";
         getUserEntry(playlistName);
+        //alt
+        //getline(cin, newPlaylistName);
         numPrompts++;
     }while(playlistExists(playlistName));
     newPlaylist.setName(playlistName);
@@ -99,6 +101,8 @@ bool createNewPlaylist(const Playlist& allSongs, Playlist& newPlaylist){
     do{
         cout << "Make a selection: ";
         getUserEntry(userSongChoice);
+        //alt
+        //getline(cin, tempSelection);
         if(userSongChoice == allSongs.getNumSongsLoaded()+1){
             if(newPlaylist.getNumSongsLoaded() > 0){
                 writePlaylistToFile(newPlaylist);
@@ -364,6 +368,9 @@ bool deleteSongFromPlaylist(Playlist& playlist){
     do{
         cout << "Select a song: ";
         getUserEntry(songChoice);
+        //alt
+        //getline(cin, temp);
+        //selectedSong = stoi(temp);
         bool alreadyDeleted = false;
         
         for(int i = 0; i < count; i++){
